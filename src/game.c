@@ -1,5 +1,6 @@
 #include "game.h"
 #include "render.h"
+#include "scene.h"
 
 Game Game_Create(Context *context){
 	Game game;

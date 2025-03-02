@@ -2,16 +2,12 @@
 #define GAME_H
 
 #include "context.h"
-
-typedef struct scene_s Scene;
-
-typedef struct game_s {
-	Context *context;
-	Scene main_scene;
-} Game;
+#include "g_types.h"
 
 Game Game_Create(Context *context);
 
 bool Game_Run(Game *game);
+
+#include "scene.h"
 
 #endif

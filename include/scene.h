@@ -1,14 +1,14 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-typedef struct game_s Game;
-
-typedef struct scene_s {
-	Game *game;
-} Scene;
+#include "g_types.h"
 
 bool Scene_Reset(Scene *scene, Game *game);
 
 bool Scene_Update(Scene *scene);
+
+Entity * Scene_AddEntity(Scene *scene);
+
+bool Scene_RemoveEntity(Scene *scene, Entity *entity);
 
 #endif
