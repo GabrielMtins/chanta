@@ -28,7 +28,7 @@ void Context_PollEvent(Context *context){
 	size_t new_tick;
 
 	new_tick = SDL_GetTicks();
-	context->delta_time = 0.001f * (new_tick - context->tick);
+	context->dt = 0.001f * (new_tick - context->tick);
 	context->tick = new_tick;
 	
 	while(SDL_PollEvent(&e)){

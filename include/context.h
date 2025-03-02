@@ -16,7 +16,7 @@ typedef struct {
 	SDL_Renderer *renderer;
 
 	size_t tick;
-	float delta_time;
+	float dt;
 
 	bool quit;
 } Context;

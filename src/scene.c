@@ -1,5 +1,16 @@
 #include "scene.h"
 
+static bool Scene_HandleCollision(Scene *scene);
+
+Scene *Scene_Setup(Mems *mems){
+	Scene *scene;
+
+	scene = Mems_Alloc(mems, sizeof(Scene));
+	scene->entities = Mems_Alloc(mems, sizeof(Entity) * MAX_ENTITIES);
+
+	return scene;
+}
+
 bool Scene_Reset(Scene *scene, Game *game){
 	scene->game = game;
 	scene->top_free_index = -1;
@@ -9,7 +20,8 @@ bool Scene_Reset(Scene *scene, Game *game){
 }
 
 bool Scene_Update(Scene *scene){
-	(void) scene;
+	if(scene == NULL)
+		return NULL;
 
 	return true;
 }
@@ -35,6 +47,21 @@ bool Scene_RemoveEntity(Scene *scene, Entity *entity){
 	scene->free_entities_stack[++scene->top_free_index] = entity;
 	entity->removed = true;
 	entity->free = false;
+
+	return true;
+}
+
+static bool Scene_HandleCollision(Scene *scene){
+	Entity *current;
+
+	for(size_t i = 0; i < scene->num_entities; i++){
+		current = &scene->entities[i];
+
+		if(current->removed)
+			continue;
+
+		current->
+	}
 
 	return true;
 }
