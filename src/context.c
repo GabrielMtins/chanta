@@ -13,7 +13,7 @@ Context *Context_Create(const char *title, int w, int h, Mems *memory){
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			2 * w, 2 * h,
-			0
+			SDL_WINDOW_RESIZABLE
 			);
 
 	context->renderer = SDL_CreateRenderer(
@@ -21,6 +21,9 @@ Context *Context_Create(const char *title, int w, int h, Mems *memory){
 			-1,
 			SDL_RENDERER_PRESENTVSYNC
 			);
+
+	context->width = w;
+	context->height = h;
 
 	SDL_RenderSetLogicalSize(context->renderer, w, h);
 

@@ -6,6 +6,7 @@ static bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id);
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity);
 static bool Scene_HandlePhysics(Scene *scene);
 static bool Scene_HandleEntityCollision(Scene *scene);
+static bool Scene_RenderWorld(Scene *scene, int layer);
 static bool Scene_Render(Scene *scene);
 
 bool Scene_Reset(Scene *scene, Game *game){
@@ -14,6 +15,11 @@ bool Scene_Reset(Scene *scene, Game *game){
 	scene->num_entities = 0;
 
 	memset(scene->world->tiles, 0, WORLD_DATA_SIZE);
+
+	for(size_t i = 0; i < MAX_ENTITIES; i++){
+		scene->entities[i].removed = true;
+		scene->entities[i].free = false;
+	}
 
 	Scene_SetTileId(scene, 8, 8, WORLD_LAYER_FOREGROUND, 1);
 	Scene_SetTileId(scene, 8, 9, WORLD_LAYER_FOREGROUND, 1);
@@ -29,9 +35,16 @@ bool Scene_Update(Scene *scene){
 	if(scene == NULL)
 		return false;
 
+	scene->camera.x -= scene->game->context->dt * 40.0f;
 	Scene_HandlePhysics(scene);
 	Scene_HandleEntityCollision(scene);
 	Scene_Render(scene);
+
+	return true;
+}
+
+bool Scene_SetWorldTexture(Scene *scene, Texture *texture){
+	scene->world->texture = texture;
 
 	return true;
 }
@@ -97,7 +110,7 @@ static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
 	if(scene == NULL || entity->removed || entity == NULL)
 		return false;
 
-	if((scene->world->collision_layer & entity->collision_mask) == 0)
+	if((scene->world->collision_layer & entity->collision_mask) == 0 && (scene->world->collision_layer & entity->trigger_mask) == 0)
 		return false;
 
 	start_x = floorf(entity->position.x / WORLD_TILE_WIDTH);
@@ -129,12 +142,12 @@ static bool Scene_HandlePhysics(Scene *scene){
 
 		current->position.x += delta.x;
 
-		if(Scene_CheckCollisionWorld(scene, current)){
+		if(Scene_CheckCollisionWorld(scene, current) && (current->collision_mask & scene->world.collision_layer) != ){
 			if(current->velocity.x > 0){
-				current->position.x = floorf(current->position.x + current->size.x) - current->size.x;
+				current->position.x = floorf((current->position.x + current->size.x) / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH - current->size.x;
 			}
 			else{
-				current->position.x = ceilf(current->position.x);
+				current->position.x = ceilf(current->position.x / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH;
 			}
 		}
 
@@ -142,10 +155,10 @@ static bool Scene_HandlePhysics(Scene *scene){
 
 		if(Scene_CheckCollisionWorld(scene, current)){
 			if(current->velocity.y > 0){
-				current->position.y = floorf(current->position.y + current->size.y) - current->size.y;
+				current->position.y = floorf((current->position.y + current->size.y) / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT - current->size.y;
 			}
 			else{
-				current->position.y = ceilf(current->position.y);
+				current->position.y = ceilf(current->position.y / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT;
 			}
 		}
 	}
@@ -176,8 +189,47 @@ static bool Scene_HandleEntityCollision(Scene *scene){
 	return true;
 }
 
+static bool Scene_RenderWorld(Scene *scene, int layer){
+	int start_x, start_y, end_x, end_y;
+	int screen_x, screen_y;
+
+	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
+		return false;
+
+	start_x = floorf(scene->camera.x / WORLD_TILE_WIDTH);
+	start_y = floorf(scene->camera.y / WORLD_TILE_HEIGHT);
+	end_x = ceilf((scene->camera.y + scene->game->context->width) / WORLD_TILE_WIDTH);
+	end_y = ceilf((scene->camera.y + scene->game->context->height) / WORLD_TILE_HEIGHT);
+
+	for(int i = start_x; i < end_x; i++){
+		for(int j = start_y; j < end_y; j++){
+			uint8_t id = Scene_GetTileId(scene, i, j, layer);
+			if(id == 0)
+				continue;
+			id--;
+
+			screen_x = i * WORLD_TILE_WIDTH - (int) scene->camera.x;
+			screen_y = j * WORLD_TILE_WIDTH - (int) scene->camera.y;
+
+			Texture_Render(
+					scene->game->context,
+					scene->world->texture,
+					screen_x,
+					screen_y,
+					id,
+					0
+					);
+		}
+	}
+
+	return true;
+}
+
 static bool Scene_Render(Scene *scene){
 	Entity *current;
+
+	Scene_RenderWorld(scene, WORLD_LAYER_BACKGROUND);
+	Scene_RenderWorld(scene, WORLD_LAYER_FOREGROUND);
 
 	for(size_t i = 0; i < scene->num_entities; i++){
 		current = &scene->entities[i];
@@ -185,16 +237,17 @@ static bool Scene_Render(Scene *scene){
 		if(current->removed || current->texture == NULL)
 			continue;
 
-
 		Texture_Render(
 				scene->game->context,
 				current->texture,
-				current->position.x,
-				current->position.y,
+				current->position.x - scene->camera.x,
+				current->position.y - scene->camera.y,
 				current->cell_id,
 				0
 				);
 	}
+
+	Scene_RenderWorld(scene, WORLD_LAYER_DETAIL);
 
 	return true;
 }

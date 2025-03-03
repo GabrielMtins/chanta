@@ -30,30 +30,21 @@ int main(int argc, char **argv){
 			0,
 			256,
 			256,
-			32,
-			32
+			16,
+			16
 			);
+
+	Scene_SetWorldTexture(game->main_scene, Game_GetTexture(game, 0));
 
 	Entity *ent = Scene_AddEntity(game->main_scene);
 	Entity_Reset(ent);
 
 	ent->texture = &game->resources->textures[0];
-	ent->cell_id = 0;
-	ent->position = (Vec2){210.0f, -20.0f};
-	ent->velocity = (Vec2){-30.0f, 80.0f};
-	ent->size = (Vec2){32.0f, 32.0f};
+	ent->cell_id = 2;
+	ent->position = (Vec2){210.0f, 0.0f};
+	ent->velocity = (Vec2){30.01f, 0.0f};
+	ent->size = (Vec2){16.0f, 16.0f};
 	ent->collision_mask = 1;
-
-	ent = Scene_AddEntity(game->main_scene);
-	Entity_Reset(ent);
-
-	ent->texture = &game->resources->textures[0];
-	ent->cell_id = 0;
-	ent->position = (Vec2){128.0f, 128.0f};
-	ent->size = (Vec2){32.0f, 32.0f};
-	//ent->collision_layer = 1;
-
-	//ent->velocity = (Vec2){-10.0f, 0.0f};
 
 	Game_Run(game);
 

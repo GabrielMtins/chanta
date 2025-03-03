@@ -19,6 +19,14 @@ Game *Game_Create(Context *context){
 	return game;
 }
 
+Texture * Game_GetTexture(Game *game, size_t index){
+	if(index < MAX_TEXTURES){
+		return &game->resources->textures[index];
+	}
+
+	return NULL;
+}
+
 bool Game_Run(Game *game){
 	bool success = true;
 

@@ -1,26 +1,11 @@
 #ifndef G_TYPES_H
 #define G_TYPES_H
 
+#include "g_def.h"
 #include "context.h"
 #include "vec2.h"
 #include "texture.h"
 #include "resource.h"
-
-#define MAX_ENTITIES 256
-
-#define WORLD_WIDTH 256
-#define WORLD_HEIGHT 256
-#define WORLD_TILE_WIDTH 16
-#define WORLD_TILE_HEIGHT 16
-#define WORLD_NUM_LAYERS 3
-#define WORLD_TILE_OUT_OF_BOUNDS 0
-#define WORLD_DATA_SIZE (WORLD_WIDTH * WORLD_HEIGHT * WORLD_NUM_LAYERS)
-
-enum WORLD_LAYERS_ENUM {
-	WORLD_LAYER_BACKGROUND = 0,
-	WORLD_LAYER_FOREGROUND = 1,
-	WORLD_LAYER_DETAIL = 2
-};
 
 typedef struct scene_s Scene;
 typedef struct game_s Game;
@@ -51,7 +36,7 @@ struct scene_s {
 	int top_free_index;
 
 	World *world;
-	Vec2 camera_position;
+	Vec2 camera;
 };
 
 /* Variáveis customizáveis da entidade. */

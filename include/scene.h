@@ -10,6 +10,8 @@ bool Scene_Reset(Scene *scene, Game *game);
 
 bool Scene_Update(Scene *scene);
 
+bool Scene_SetWorldTexture(Scene *scene, Texture *texture);
+
 Entity * Scene_AddEntity(Scene *scene);
 
 bool Scene_RemoveEntity(Scene *scene, Entity *entity);
