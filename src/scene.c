@@ -199,7 +199,7 @@ static bool Scene_HandleEntityCollision(Scene *scene){
 			other = &scene->entities[j];
 
 			bool is_mask = (current->collision_mask & other->collision_layer) != 0;
-			bool is_trigger = (current->collision_trigger & other->collision_layer) != 0;
+			bool is_trigger = (current->trigger_mask & other->collision_layer) != 0;
 
 			if(i == j || other->removed || !(is_mask || is_trigger))
 				continue;
