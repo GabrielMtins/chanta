@@ -2,14 +2,19 @@
 #include "render.h"
 #include "scene.h"
 
-Game Game_Create(Context *context, Scene *scene, Resource *resources){
-	Game game;
+Game *Game_Create(Context *context){
+	Game *game;
 
-	game.context = context;
-	game.resources = resources;
-	game.main_scene = scene;
+	game = (Game *) Mems_Alloc(context->memory, sizeof(Game));
 
-	Scene_Reset(scene, &game);
+	game->context = context;
+	game->resources = (Resource *) Mems_Alloc(context->memory, sizeof(Resource));
+
+	game->main_scene = (Scene *) Mems_Alloc(context->memory, sizeof(Scene));
+	game->main_scene->entities = (Entity *) Mems_Alloc(context->memory, sizeof(Entity) * MAX_ENTITIES);
+	game->main_scene->world = Mems_Alloc(context->memory, sizeof(World));
+
+	Scene_Reset(game->main_scene, game);
 
 	return game;
 }
@@ -18,14 +23,21 @@ bool Game_Run(Game *game){
 	bool success = true;
 
 	while(!game->context->quit){
-		Context_PollEvent(game->context);
-
-		Scene_Update(game->main_scene);
-
-		Render_Clear(game->context, 0, 0, 0, 255);
-		Render_Present(game->context);
+		Game_Loop(game);
 	}
 
 	return success;
+}
+
+bool Game_Loop(Game *game){
+	Context_PollEvent(game->context);
+
+	Render_Clear(game->context, 0, 0, 0, 255);
+
+	Scene_Update(game->main_scene);
+
+	Render_Present(game->context);
+
+	return true;
 }
 

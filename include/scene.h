@@ -4,7 +4,7 @@
 #include "g_types.h"
 #include "mems.h"
 
-Scene *Scene_Setup(Mems *mems);
+Scene *Scene_Setup(void);
 
 bool Scene_Reset(Scene *scene, Game *game);
 

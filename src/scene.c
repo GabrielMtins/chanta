@@ -1,27 +1,37 @@
 #include "scene.h"
+#include "box.h"
 
-static bool Scene_HandleCollision(Scene *scene);
-
-Scene *Scene_Setup(Mems *mems){
-	Scene *scene;
-
-	scene = Mems_Alloc(mems, sizeof(Scene));
-	scene->entities = Mems_Alloc(mems, sizeof(Entity) * MAX_ENTITIES);
-
-	return scene;
-}
+static uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer);
+static bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id);
+static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity);
+static bool Scene_HandlePhysics(Scene *scene);
+static bool Scene_HandleEntityCollision(Scene *scene);
+static bool Scene_Render(Scene *scene);
 
 bool Scene_Reset(Scene *scene, Game *game){
 	scene->game = game;
 	scene->top_free_index = -1;
 	scene->num_entities = 0;
 
+	memset(scene->world->tiles, 0, WORLD_DATA_SIZE);
+
+	Scene_SetTileId(scene, 8, 8, WORLD_LAYER_FOREGROUND, 1);
+	Scene_SetTileId(scene, 8, 9, WORLD_LAYER_FOREGROUND, 1);
+	Scene_SetTileId(scene, 9, 8, WORLD_LAYER_FOREGROUND, 1);
+	Scene_SetTileId(scene, 9, 9, WORLD_LAYER_FOREGROUND, 1);
+
+	scene->world->collision_layer = 1;
+
 	return true;
 }
 
 bool Scene_Update(Scene *scene){
 	if(scene == NULL)
-		return NULL;
+		return false;
+
+	Scene_HandlePhysics(scene);
+	Scene_HandleEntityCollision(scene);
+	Scene_Render(scene);
 
 	return true;
 }
@@ -51,8 +61,63 @@ bool Scene_RemoveEntity(Scene *scene, Entity *entity){
 	return true;
 }
 
-static bool Scene_HandleCollision(Scene *scene){
+static uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer){
+	int index;
+
+	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
+		return WORLD_TILE_OUT_OF_BOUNDS;
+
+	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
+		return WORLD_TILE_OUT_OF_BOUNDS;
+
+	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
+
+	return scene->world->tiles[index];
+}
+
+static bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id){
+	int index;
+
+	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
+		return false;
+
+	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
+		return false;
+
+	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
+
+	scene->world->tiles[index] = id;
+
+	return true;
+}
+
+static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
+	int start_x, start_y, end_x, end_y;
+
+	if(scene == NULL || entity->removed || entity == NULL)
+		return false;
+
+	if((scene->world->collision_layer & entity->collision_mask) == 0)
+		return false;
+
+	start_x = floorf(entity->position.x / WORLD_TILE_WIDTH);
+	start_y = floorf(entity->position.y / WORLD_TILE_HEIGHT);
+	end_x = ceilf((entity->position.x + entity->size.x) / WORLD_TILE_WIDTH);
+	end_y = ceilf((entity->position.y + entity->size.y) / WORLD_TILE_HEIGHT);
+
+	for(int i = start_x; i < end_x; i++){
+		for(int j = start_y; j < end_y; j++){
+			if(Scene_GetTileId(scene, i, j, WORLD_LAYER_FOREGROUND) != 0)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+static bool Scene_HandlePhysics(Scene *scene){
 	Entity *current;
+	Vec2 delta;
 
 	for(size_t i = 0; i < scene->num_entities; i++){
 		current = &scene->entities[i];
@@ -60,7 +125,75 @@ static bool Scene_HandleCollision(Scene *scene){
 		if(current->removed)
 			continue;
 
-		current->
+		Vec2_Mul(&delta, &current->velocity, scene->game->context->dt);
+
+		current->position.x += delta.x;
+
+		if(Scene_CheckCollisionWorld(scene, current)){
+			if(current->velocity.x > 0){
+				current->position.x = floorf(current->position.x + current->size.x) - current->size.x;
+			}
+			else{
+				current->position.x = ceilf(current->position.x);
+			}
+		}
+
+		current->position.y += delta.y;
+
+		if(Scene_CheckCollisionWorld(scene, current)){
+			if(current->velocity.y > 0){
+				current->position.y = floorf(current->position.y + current->size.y) - current->size.y;
+			}
+			else{
+				current->position.y = ceilf(current->position.y);
+			}
+		}
+	}
+
+	return true;
+}
+
+static bool Scene_HandleEntityCollision(Scene *scene){
+	Entity *current;
+	Entity *other;
+
+	for(size_t i = 0; i < scene->num_entities; i++){
+		current = &scene->entities[i];
+
+		if(current->removed)
+			continue;
+
+		for(size_t j = 0; j < scene->num_entities; j++){
+			other = &scene->entities[j];
+
+			if(i == j || other->removed || (current->collision_mask & other->collision_layer) == 0)
+				continue;
+
+			Box_SolveCollision(&current->position, &current->size, &other->position, &other->size);
+		}
+	}
+
+	return true;
+}
+
+static bool Scene_Render(Scene *scene){
+	Entity *current;
+
+	for(size_t i = 0; i < scene->num_entities; i++){
+		current = &scene->entities[i];
+
+		if(current->removed || current->texture == NULL)
+			continue;
+
+
+		Texture_Render(
+				scene->game->context,
+				current->texture,
+				current->position.x,
+				current->position.y,
+				current->cell_id,
+				0
+				);
 	}
 
 	return true;

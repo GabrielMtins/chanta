@@ -4,8 +4,10 @@
 #include "context.h"
 #include "g_types.h"
 
-Game Game_Create(Context *context, Scene *scene, Resource *resources);
+Game *Game_Create(Context *context);
 
 bool Game_Run(Game *game);
+
+bool Game_Loop(Game *game);
 
 #endif

@@ -11,6 +11,8 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 
+#include "mems.h"
+
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
@@ -19,9 +21,11 @@ typedef struct {
 	float dt;
 
 	bool quit;
+
+	Mems *memory;
 } Context;
 
-Context Context_Create(const char *title, int w, int h);
+Context *Context_Create(const char *title, int w, int h, Mems *memory);
 
 void Context_PollEvent(Context *context);
 

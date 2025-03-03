@@ -1,24 +1,33 @@
 #include "context.h"
 
-Context Context_Create(const char *title, int w, int h){
-	Context context;
+Context *Context_Create(const char *title, int w, int h, Mems *memory){
+	SDL_Init(SDL_INIT_EVERYTHING);
+	IMG_Init(IMG_INIT_PNG);
 
-	context.window = SDL_CreateWindow(
+	Context *context;
+
+	context = (Context *) Mems_Alloc(memory, sizeof(Context));
+
+	context->window = SDL_CreateWindow(
 			title,
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
-			w, h,
+			2 * w, 2 * h,
 			0
 			);
 
-	context.renderer = SDL_CreateRenderer(
-			context.window,
+	context->renderer = SDL_CreateRenderer(
+			context->window,
 			-1,
 			SDL_RENDERER_PRESENTVSYNC
 			);
 
-	context.quit = false;
-	context.tick = 0;
+	SDL_RenderSetLogicalSize(context->renderer, w, h);
+
+	context->memory = memory;
+
+	context->quit = false;
+	context->tick = 0;
 
 	return context;
 }
@@ -40,6 +49,9 @@ void Context_PollEvent(Context *context){
 bool Context_Destroy(Context *context){
 	SDL_DestroyRenderer(context->renderer);
 	SDL_DestroyWindow(context->window);
+
+	IMG_Quit();
+	SDL_Quit();
 
 	return true;
 }

@@ -1,21 +1,42 @@
 #ifndef G_TYPES_H
 #define G_TYPES_H
 
-#define MAX_ENTITIES 256
-
 #include "context.h"
 #include "vec2.h"
 #include "texture.h"
 #include "resource.h"
 
+#define MAX_ENTITIES 256
+
+#define WORLD_WIDTH 256
+#define WORLD_HEIGHT 256
+#define WORLD_TILE_WIDTH 16
+#define WORLD_TILE_HEIGHT 16
+#define WORLD_NUM_LAYERS 3
+#define WORLD_TILE_OUT_OF_BOUNDS 0
+#define WORLD_DATA_SIZE (WORLD_WIDTH * WORLD_HEIGHT * WORLD_NUM_LAYERS)
+
+enum WORLD_LAYERS_ENUM {
+	WORLD_LAYER_BACKGROUND = 0,
+	WORLD_LAYER_FOREGROUND = 1,
+	WORLD_LAYER_DETAIL = 2
+};
+
 typedef struct scene_s Scene;
 typedef struct game_s Game;
 typedef struct entity_s Entity;
+typedef struct world_s World;
 
 struct game_s {
 	Context *context;
 	Scene *main_scene;
 	Resource *resources;
+};
+
+struct world_s {
+	Texture *texture;
+	uint8_t tiles[WORLD_WIDTH * WORLD_HEIGHT * WORLD_NUM_LAYERS];
+	uint32_t collision_layer;
 };
 
 struct scene_s {
@@ -28,6 +49,9 @@ struct scene_s {
 	/* stack de memória que indica quais entidades estão livres */
 	Entity *free_entities_stack[MAX_ENTITIES];
 	int top_free_index;
+
+	World *world;
+	Vec2 camera_position;
 };
 
 /* Variáveis customizáveis da entidade. */
@@ -42,6 +66,11 @@ struct entity_s {
 	bool removed;
 	/* Marque essa flag como true para que seja liberada da memória no próximo frame. */
 	bool free;
+
+	/* Variável que indica a vida de uma entidade.
+	 * Quando health <= 0, a flag free é marcada como true
+	 * para a remoção. */
+	float health;
 
 	/* Tipo da entidade. */
 	int type;
@@ -71,9 +100,13 @@ struct entity_s {
 	/* Tempo em ms para o próximo tempo em que a função think() será chamada */
 	size_t next_think;
 
+	/* A função update é chamada em toda interação */
 	void (*update)(Scene *, Entity *, float);
+	/* A função think é chamada apenas quando tick > next_think */
 	void (*think)(Scene *, Entity *);
+	/* A função é chamada toda vez que ocorre uma colisão */
 	void (*onCollision)(Scene *, Entity *, Entity *);
+	/* A função é chamada toda vez que há um trigger */
 	void (*onTrigger)(Scene *, Entity *, Entity *);
 
 	/* Variáveis customizadas para entidade */
