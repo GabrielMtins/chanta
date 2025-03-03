@@ -10,6 +10,7 @@ bool Entity_Reset(Entity *ent){
 	ent->type = -1;
 
 	ent->position = (Vec2){0.0f, 0.0f};
+	ent->offset_sprite = (Vec2){0.0f, 0.0f};
 	ent->size     = (Vec2){0.0f, 0.0f};
 	ent->velocity = (Vec2){0.0f, 0.0f};
 

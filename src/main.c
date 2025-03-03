@@ -19,9 +19,10 @@ int main(int argc, char **argv){
 	memory = Mems_Create(malloc(MEMORY_USED), MEMORY_USED);
 
 	context = Context_Create("hi", 480, 272, &memory);
+	Context_SetDataFromFile(context, "tilemap.png");
 	game = Game_Create(context);
 
-	printf("%i\n", MegaTexture_Load(&game->resources->mega_textures[0], context, "tilemap.png"));
+	printf("%i\n", MegaTexture_LoadData(&game->resources->mega_textures[0], context, 0));
 
 	Texture_Create(
 			&game->resources->textures[0], 

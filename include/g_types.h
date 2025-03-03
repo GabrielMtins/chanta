@@ -61,6 +61,7 @@ struct entity_s {
 	int type;
 
 	Vec2 position;
+	Vec2 offset_sprite;
 	Vec2 size;
 	Vec2 velocity;
 

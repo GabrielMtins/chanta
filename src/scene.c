@@ -195,6 +195,9 @@ static bool Scene_HandleEntityCollision(Scene *scene){
 		if(current->removed)
 			continue;
 
+		if(current->collision_mask == 0 && current->trigger_mask == 0)
+			continue;
+
 		for(size_t j = 0; j < scene->num_entities; j++){
 			other = &scene->entities[j];
 
@@ -213,6 +216,7 @@ static bool Scene_HandleEntityCollision(Scene *scene){
 			else if(is_mask && Box_SolveCollision(&current->position, &current->size, &other->position, &other->size)){
 				bool has_collision_world = (current->collision_mask & scene->world->collision_layer) != 0;
 
+				/* reverter à velha posição caso haja colisão com o mundo */
 				if(Scene_CheckCollisionWorld(scene, current) && has_collision_world){
 					current->position = old_pos;
 				}
@@ -277,8 +281,8 @@ static bool Scene_Render(Scene *scene){
 		Texture_Render(
 				scene->game->context,
 				current->texture,
-				current->position.x - scene->camera.x,
-				current->position.y - scene->camera.y,
+				current->position.x + current->offset_sprite.x - scene->camera.x,
+				current->position.y + current->offset_sprite.y - scene->camera.y,
 				current->cell_id,
 				0
 				);

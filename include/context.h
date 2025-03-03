@@ -16,7 +16,7 @@
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	SDL_RWops *rw;
+	SDL_RWops *data;
 
 	int width, height;
 
@@ -29,6 +29,10 @@ typedef struct {
 } Context;
 
 Context *Context_Create(const char *title, int w, int h, Mems *memory);
+
+bool Context_SetDataFromMem(Context *context, const char *data, int size);
+
+bool Context_SetDataFromFile(Context *context, const char *filename);
 
 void Context_PollEvent(Context *context);
 

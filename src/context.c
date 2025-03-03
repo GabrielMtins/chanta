@@ -31,9 +31,21 @@ Context *Context_Create(const char *title, int w, int h, Mems *memory){
 
 	context->quit = false;
 	context->tick = 0;
-	context->rw = NULL;
+	context->data = NULL;
 
 	return context;
+}
+
+bool Context_SetDataFromMem(Context *context, const char *data, int size){
+	context->data = SDL_RWFromConstMem((const void *) data, size);
+
+	return context->data != NULL;
+}
+
+bool Context_SetDataFromFile(Context *context, const char *filename){
+	context->data = SDL_RWFromFile(filename, "rb");
+
+	return context->data != NULL;
 }
 
 void Context_PollEvent(Context *context){

@@ -19,6 +19,18 @@ bool MegaTexture_Load(MegaTexture *mega_texture, Context *context, const char *f
 	return true;
 }
 
+bool MegaTexture_LoadData(MegaTexture *mega_texture, Context *context, size_t offset){
+	SDL_RWseek(context->data, offset, RW_SEEK_SET);
+
+	mega_texture->texture = IMG_LoadTexture_RW(
+			context->renderer,
+			context->data,
+			0
+			);
+
+	return mega_texture->texture != NULL;
+}
+
 bool MegaTexture_Destroy(MegaTexture *mega_texture){
 	if(mega_texture == NULL)
 		return false;
