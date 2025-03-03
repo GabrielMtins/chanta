@@ -31,6 +31,7 @@ Context *Context_Create(const char *title, int w, int h, Mems *memory){
 
 	context->quit = false;
 	context->tick = 0;
+	context->rw = NULL;
 
 	return context;
 }

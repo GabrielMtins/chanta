@@ -16,6 +16,7 @@
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
+	SDL_RWops *rw;
 
 	int width, height;
 

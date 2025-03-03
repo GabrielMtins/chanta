@@ -35,7 +35,6 @@ bool Scene_Update(Scene *scene){
 	if(scene == NULL)
 		return false;
 
-	scene->camera.x -= scene->game->context->dt * 40.0f;
 	Scene_HandlePhysics(scene);
 	Scene_HandleEntityCollision(scene);
 	Scene_Render(scene);
@@ -131,8 +130,10 @@ static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
 static bool Scene_HandlePhysics(Scene *scene){
 	Entity *current;
 	Vec2 delta;
+	bool has_collision, found_collision;
 
 	for(size_t i = 0; i < scene->num_entities; i++){
+		found_collision = false;
 		current = &scene->entities[i];
 
 		if(current->removed)
@@ -142,24 +143,41 @@ static bool Scene_HandlePhysics(Scene *scene){
 
 		current->position.x += delta.x;
 
-		if(Scene_CheckCollisionWorld(scene, current) && (current->collision_mask & scene->world.collision_layer) != ){
-			if(current->velocity.x > 0){
-				current->position.x = floorf((current->position.x + current->size.x) / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH - current->size.x;
+		has_collision = (current->collision_mask & scene->world->collision_layer) != 0;
+
+		if(Scene_CheckCollisionWorld(scene, current)){
+			if(has_collision){
+				if(current->velocity.x > 0){
+					current->position.x = floorf((current->position.x + current->size.x) / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH - current->size.x;
+				}
+				else{
+					current->position.x = ceilf(current->position.x / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH;
+				}
 			}
-			else{
-				current->position.x = ceilf(current->position.x / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH;
-			}
+
+			found_collision = true;
 		}
 
 		current->position.y += delta.y;
 
 		if(Scene_CheckCollisionWorld(scene, current)){
-			if(current->velocity.y > 0){
-				current->position.y = floorf((current->position.y + current->size.y) / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT - current->size.y;
+			if(has_collision){
+				if(current->velocity.y > 0){
+					current->position.y = floorf((current->position.y + current->size.y) / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT - current->size.y;
+				}
+				else{
+					current->position.y = ceilf(current->position.y / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT;
+				}
 			}
-			else{
-				current->position.y = ceilf(current->position.y / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT;
-			}
+
+			found_collision = true;
+		}
+
+		if(found_collision){
+			if(has_collision && current->onCollision != NULL)
+				current->onCollision(scene, current, NULL);
+			else if(current->onTrigger != NULL)
+				current->onTrigger(scene, current, NULL);
 		}
 	}
 
@@ -169,6 +187,7 @@ static bool Scene_HandlePhysics(Scene *scene){
 static bool Scene_HandleEntityCollision(Scene *scene){
 	Entity *current;
 	Entity *other;
+	Vec2 old_pos;
 
 	for(size_t i = 0; i < scene->num_entities; i++){
 		current = &scene->entities[i];
@@ -179,10 +198,28 @@ static bool Scene_HandleEntityCollision(Scene *scene){
 		for(size_t j = 0; j < scene->num_entities; j++){
 			other = &scene->entities[j];
 
-			if(i == j || other->removed || (current->collision_mask & other->collision_layer) == 0)
+			bool is_mask = (current->collision_mask & other->collision_layer) != 0;
+			bool is_trigger = (current->collision_trigger & other->collision_layer) != 0;
+
+			if(i == j || other->removed || !(is_mask || is_trigger))
 				continue;
 
-			Box_SolveCollision(&current->position, &current->size, &other->position, &other->size);
+			old_pos = current->position;
+
+			if(is_trigger && Box_CheckCollision(&current->position, &current->size, &other->position, &other->size)){
+				if(current->onTrigger != NULL)
+					current->onTrigger(scene, current, other);
+			}
+			else if(is_mask && Box_SolveCollision(&current->position, &current->size, &other->position, &other->size)){
+				bool has_collision_world = (current->collision_mask & scene->world->collision_layer) != 0;
+
+				if(Scene_CheckCollisionWorld(scene, current) && has_collision_world){
+					current->position = old_pos;
+				}
+
+				if(current->onCollision != NULL)
+					current->onCollision(scene, current, other);
+			}
 		}
 	}
 
