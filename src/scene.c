@@ -13,6 +13,7 @@ bool Scene_Reset(Scene *scene, Game *game){
 	scene->game = game;
 	scene->top_free_index = -1;
 	scene->num_entities = 0;
+	scene->camera = (Vec2){0.0f, 0.0f};
 
 	memset(scene->world->tiles, 0, WORLD_DATA_SIZE);
 

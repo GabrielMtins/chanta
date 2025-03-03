@@ -49,6 +49,7 @@ int main(int argc, char **argv){
 
 	Game_Run(game);
 
+	MegaTexture_Destroy(&game->resources->mega_textures[0]);
 	Context_Destroy(context);
 	free(memory.block);
 
