@@ -6,6 +6,7 @@ static bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id);
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity);
 static bool Scene_HandlePhysics(Scene *scene);
 static bool Scene_HandleEntityCollision(Scene *scene);
+static bool Scene_UpdateLogic(Scene *scene);
 static bool Scene_RenderWorld(Scene *scene, int layer);
 static bool Scene_RenderHud(Scene *scene);
 
@@ -14,6 +15,7 @@ bool Scene_Reset(Scene *scene, Game *game){
 	scene->top_free_index = -1;
 	scene->num_entities = 0;
 	scene->camera = (Vec2){0.0f, 0.0f};
+	scene->tick = 0;
 
 	memset(scene->world->tiles, 0, WORLD_DATA_SIZE);
 	scene->world->texture = NULL;
@@ -42,6 +44,7 @@ bool Scene_Update(Scene *scene){
 
 	Scene_HandlePhysics(scene);
 	Scene_HandleEntityCollision(scene);
+	Scene_UpdateLogic(scene);
 
 	return true;
 }
@@ -263,6 +266,35 @@ static bool Scene_HandleEntityCollision(Scene *scene){
 					current->onCollision(scene, current, other);
 			}
 		}
+	}
+
+	return true;
+}
+
+static bool Scene_UpdateLogic(Scene *scene){
+	Entity *current;
+
+	scene->tick += scene->game->context->delta_tick;
+
+	for(size_t i = 0; i < scene->num_entities; i++){
+		current = &scene->entities[i];
+
+		if(current->removed)
+			continue;
+
+		if(current->health <= 0.0f)
+			current->free = true;
+
+		if(current->free){
+			current->free = false;
+			current->removed = true;
+		}
+
+		if(current->update != NULL)
+			current->update(scene, current, scene->game->context->dt);
+
+		if(current->next_think < scene->tick && current->think != NULL)
+			current->think(scene, current);
 	}
 
 	return true;

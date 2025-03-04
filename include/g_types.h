@@ -44,6 +44,8 @@ struct scene_s {
 	World *world;
 	Hud *hud;
 	Vec2 camera;
+
+	uint32_t tick;
 };
 
 /* Variáveis customizáveis da entidade. */

@@ -21,6 +21,7 @@ typedef struct {
 	int width, height;
 
 	size_t tick;
+	size_t delta_tick;
 	float dt;
 
 	bool quit;
