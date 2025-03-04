@@ -28,6 +28,22 @@ Texture * Game_GetTexture(Game *game, size_t index){
 	return NULL;
 }
 
+Sfx * Game_GetChunk(Game *game, size_t index){
+	if(index < MAX_TEXTURES){
+		return &game->resources->sfx[index];
+	}
+
+	return NULL;
+}
+
+Music * Game_GetMusic(Game *game, size_t index){
+	if(index < MAX_TEXTURES){
+		return &game->resources->musics[index];
+	}
+
+	return NULL;
+}
+
 bool Game_Run(Game *game){
 	bool success = true;
 

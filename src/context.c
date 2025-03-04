@@ -72,6 +72,9 @@ bool Context_Destroy(Context *context){
 	SDL_DestroyRenderer(context->renderer);
 	SDL_DestroyWindow(context->window);
 
+	if(context->data != NULL)
+		SDL_RWclose(context->data);
+
 	IMG_Quit();
 	SDL_Quit();
 	Mix_Quit();
