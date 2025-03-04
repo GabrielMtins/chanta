@@ -11,6 +11,7 @@ typedef struct scene_s Scene;
 typedef struct game_s Game;
 typedef struct entity_s Entity;
 typedef struct world_s World;
+typedef struct hud_s Hud;
 
 struct game_s {
 	Context *context;
@@ -22,6 +23,11 @@ struct world_s {
 	Texture *texture;
 	uint8_t tiles[WORLD_WIDTH * WORLD_HEIGHT * WORLD_NUM_LAYERS];
 	uint32_t collision_layer;
+};
+
+struct hud_s  {
+	Texture *texture;
+	uint8_t tiles[HUD_NUM_TILES];
 };
 
 struct scene_s {
@@ -36,6 +42,7 @@ struct scene_s {
 	int top_free_index;
 
 	World *world;
+	Hud *hud;
 	Vec2 camera;
 };
 

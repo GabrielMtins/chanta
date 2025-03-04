@@ -13,6 +13,7 @@ Game *Game_Create(Context *context){
 	game->main_scene = (Scene *) Mems_Alloc(context->memory, sizeof(Scene));
 	game->main_scene->entities = (Entity *) Mems_Alloc(context->memory, sizeof(Entity) * MAX_ENTITIES);
 	game->main_scene->world = Mems_Alloc(context->memory, sizeof(World));
+	game->main_scene->hud = Mems_Alloc(context->memory, sizeof(Hud));
 
 	Scene_Reset(game->main_scene, game);
 
@@ -39,11 +40,10 @@ bool Game_Run(Game *game){
 
 bool Game_Loop(Game *game){
 	Context_PollEvent(game->context);
-
-	Render_Clear(game->context, 0, 0, 0, 255);
-
 	Scene_Update(game->main_scene);
 
+	Render_Clear(game->context, 0, 0, 0, 255);
+	Scene_Render(game->main_scene);
 	Render_Present(game->context);
 
 	return true;

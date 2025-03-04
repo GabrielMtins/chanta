@@ -36,6 +36,7 @@ int main(int argc, char **argv){
 			);
 
 	Scene_SetWorldTexture(game->main_scene, Game_GetTexture(game, 0));
+	Scene_SetHudTexture(game->main_scene, Game_GetTexture(game, 0));
 
 	Entity *ent = Scene_AddEntity(game->main_scene);
 	Entity_Reset(ent);

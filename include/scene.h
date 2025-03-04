@@ -10,7 +10,11 @@ bool Scene_Reset(Scene *scene, Game *game);
 
 bool Scene_Update(Scene *scene);
 
+bool Scene_Render(Scene *scene);
+
 bool Scene_SetWorldTexture(Scene *scene, Texture *texture);
+
+bool Scene_SetHudTexture(Scene *scene, Texture *texture);
 
 Entity * Scene_AddEntity(Scene *scene);
 

@@ -7,7 +7,7 @@ static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity);
 static bool Scene_HandlePhysics(Scene *scene);
 static bool Scene_HandleEntityCollision(Scene *scene);
 static bool Scene_RenderWorld(Scene *scene, int layer);
-static bool Scene_Render(Scene *scene);
+static bool Scene_RenderHud(Scene *scene);
 
 bool Scene_Reset(Scene *scene, Game *game){
 	scene->game = game;
@@ -16,6 +16,10 @@ bool Scene_Reset(Scene *scene, Game *game){
 	scene->camera = (Vec2){0.0f, 0.0f};
 
 	memset(scene->world->tiles, 0, WORLD_DATA_SIZE);
+	scene->world->texture = NULL;
+
+	memset(scene->hud->tiles, 0, HUD_NUM_TILES * sizeof(scene->hud->tiles[0]));
+	scene->hud->texture = NULL;
 
 	for(size_t i = 0; i < MAX_ENTITIES; i++){
 		scene->entities[i].removed = true;
@@ -38,7 +42,34 @@ bool Scene_Update(Scene *scene){
 
 	Scene_HandlePhysics(scene);
 	Scene_HandleEntityCollision(scene);
-	Scene_Render(scene);
+
+	return true;
+}
+
+bool Scene_Render(Scene *scene){
+	Entity *current;
+
+	Scene_RenderWorld(scene, WORLD_LAYER_BACKGROUND);
+	Scene_RenderWorld(scene, WORLD_LAYER_FOREGROUND);
+
+	for(size_t i = 0; i < scene->num_entities; i++){
+		current = &scene->entities[i];
+
+		if(current->removed || current->texture == NULL)
+			continue;
+
+		Texture_Render(
+				scene->game->context,
+				current->texture,
+				current->position.x + current->offset_sprite.x - scene->camera.x,
+				current->position.y + current->offset_sprite.y - scene->camera.y,
+				current->cell_id,
+				0
+				);
+	}
+
+	Scene_RenderWorld(scene, WORLD_LAYER_DETAIL);
+	Scene_RenderHud(scene);
 
 	return true;
 }
@@ -46,6 +77,12 @@ bool Scene_Update(Scene *scene){
 bool Scene_SetWorldTexture(Scene *scene, Texture *texture){
 	scene->world->texture = texture;
 
+	return true;
+}
+
+bool Scene_SetHudTexture(Scene *scene, Texture *texture){
+	scene->hud->texture = texture;
+	
 	return true;
 }
 
@@ -235,6 +272,9 @@ static bool Scene_RenderWorld(Scene *scene, int layer){
 	int start_x, start_y, end_x, end_y;
 	int screen_x, screen_y;
 
+	if(scene->world->texture == NULL)
+		return false;
+
 	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
 		return false;
 
@@ -267,29 +307,28 @@ static bool Scene_RenderWorld(Scene *scene, int layer){
 	return true;
 }
 
-static bool Scene_Render(Scene *scene){
-	Entity *current;
+static bool Scene_RenderHud(Scene *scene){
+	if(scene->hud->texture == NULL)
+		return false;
 
-	Scene_RenderWorld(scene, WORLD_LAYER_BACKGROUND);
-	Scene_RenderWorld(scene, WORLD_LAYER_FOREGROUND);
+	for(size_t i = 0; i < HUD_WIDTH; i++){
+		for(size_t j = 0; j < HUD_HEIGHT; j++){
+			size_t index = j * HUD_WIDTH + i;
+			uint8_t id = scene->hud->tiles[index];
 
-	for(size_t i = 0; i < scene->num_entities; i++){
-		current = &scene->entities[i];
+			if(id == 0)
+				continue;
 
-		if(current->removed || current->texture == NULL)
-			continue;
-
-		Texture_Render(
-				scene->game->context,
-				current->texture,
-				current->position.x + current->offset_sprite.x - scene->camera.x,
-				current->position.y + current->offset_sprite.y - scene->camera.y,
-				current->cell_id,
-				0
-				);
+			Texture_Render(
+					scene->game->context,
+					scene->hud->texture,
+					i * HUD_TILE_WIDTH,
+					j * HUD_TILE_HEIGHT,
+					id - 1,
+					0
+					);
+		}
 	}
-
-	Scene_RenderWorld(scene, WORLD_LAYER_DETAIL);
 
 	return true;
 }

@@ -74,6 +74,7 @@ bool Context_Destroy(Context *context){
 
 	IMG_Quit();
 	SDL_Quit();
+	Mix_Quit();
 
 	return true;
 }
