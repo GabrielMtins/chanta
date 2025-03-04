@@ -16,6 +16,8 @@ bool Scene_SetWorldTexture(Scene *scene, Texture *texture);
 
 bool Scene_SetHudTexture(Scene *scene, Texture *texture);
 
+bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id);
+
 Entity * Scene_AddEntity(Scene *scene);
 
 bool Scene_RemoveEntity(Scene *scene, Entity *entity);

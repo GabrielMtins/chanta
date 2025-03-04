@@ -2,7 +2,6 @@
 #include "box.h"
 
 static uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer);
-static bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id);
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity);
 static bool Scene_HandlePhysics(Scene *scene);
 static bool Scene_HandleEntityCollision(Scene *scene);
@@ -27,11 +26,6 @@ bool Scene_Reset(Scene *scene, Game *game){
 		scene->entities[i].removed = true;
 		scene->entities[i].free = false;
 	}
-
-	Scene_SetTileId(scene, 8, 8, WORLD_LAYER_FOREGROUND, 1);
-	Scene_SetTileId(scene, 8, 9, WORLD_LAYER_FOREGROUND, 1);
-	Scene_SetTileId(scene, 9, 8, WORLD_LAYER_FOREGROUND, 1);
-	Scene_SetTileId(scene, 9, 9, WORLD_LAYER_FOREGROUND, 1);
 
 	scene->world->collision_layer = 1;
 
@@ -89,6 +83,22 @@ bool Scene_SetHudTexture(Scene *scene, Texture *texture){
 	return true;
 }
 
+bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id){
+	int index;
+
+	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
+		return false;
+
+	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
+		return false;
+
+	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
+
+	scene->world->tiles[index] = id;
+
+	return true;
+}
+
 Entity * Scene_AddEntity(Scene *scene){
 	if(scene == NULL)
 		return NULL;
@@ -126,22 +136,6 @@ static uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer){
 	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
 
 	return scene->world->tiles[index];
-}
-
-static bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id){
-	int index;
-
-	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
-		return false;
-
-	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
-		return false;
-
-	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
-
-	scene->world->tiles[index] = id;
-
-	return true;
 }
 
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
@@ -188,12 +182,14 @@ static bool Scene_HandlePhysics(Scene *scene){
 
 		if(Scene_CheckCollisionWorld(scene, current)){
 			if(has_collision){
-				if(current->velocity.x > 0){
+				if(current->velocity.x > 0.0f){
 					current->position.x = floorf((current->position.x + current->size.x) / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH - current->size.x;
 				}
 				else{
 					current->position.x = ceilf(current->position.x / WORLD_TILE_WIDTH) * WORLD_TILE_WIDTH;
 				}
+
+				current->velocity.x = 0.0f;
 			}
 
 			found_collision = true;
@@ -209,17 +205,21 @@ static bool Scene_HandlePhysics(Scene *scene){
 				else{
 					current->position.y = ceilf(current->position.y / WORLD_TILE_HEIGHT) * WORLD_TILE_HEIGHT;
 				}
+
+				current->velocity.y = 0.0f;
 			}
 
 			found_collision = true;
 		}
 
+		/*
 		if(found_collision){
 			if(has_collision && current->onCollision != NULL)
 				current->onCollision(scene, current, NULL);
 			else if(current->onTrigger != NULL)
 				current->onTrigger(scene, current, NULL);
 		}
+		*/
 	}
 
 	return true;
