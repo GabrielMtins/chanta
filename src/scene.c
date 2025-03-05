@@ -39,9 +39,9 @@ bool Scene_Update(Scene *scene){
 	if(scene == NULL)
 		return false;
 
+	Scene_UpdateLogic(scene);
 	Scene_HandlePhysics(scene);
 	Scene_HandleEntityCollision(scene);
-	Scene_UpdateLogic(scene);
 
 	return true;
 }
@@ -159,6 +159,7 @@ static int Scene_Mod(int x, int y){
 
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
 	int start_x, start_y, end_x, end_y;
+	Vec2 block_start, block_size;
 
 	if(scene == NULL || entity->removed || entity == NULL)
 		return false;
@@ -173,7 +174,13 @@ static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
 
 	for(int i = start_x; i < end_x; i++){
 		for(int j = start_y; j < end_y; j++){
-			if(Scene_GetTileId(scene, i, j, WORLD_LAYER_FOREGROUND) != 0)
+			if(Scene_GetTileId(scene, i, j, WORLD_LAYER_FOREGROUND) == 0)
+				continue;
+
+			block_start = (Vec2) {i * WORLD_TILE_WIDTH, j * WORLD_TILE_HEIGHT};
+			block_size = (Vec2) {WORLD_TILE_WIDTH, WORLD_TILE_HEIGHT};
+
+			if(Box_CheckCollision(&block_start, &block_size, &entity->position, &entity->size))
 				return true;
 		}
 	}
@@ -231,14 +238,12 @@ static bool Scene_HandlePhysics(Scene *scene){
 			found_collision = true;
 		}
 
-		/*
 		if(found_collision){
 			if(has_collision && current->onCollision != NULL)
 				current->onCollision(scene, current, NULL);
 			else if(current->onTrigger != NULL)
 				current->onTrigger(scene, current, NULL);
 		}
-		*/
 	}
 
 	return true;

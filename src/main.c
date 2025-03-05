@@ -8,8 +8,10 @@
 #define MEMORY_USED 1024 * 1024 * 8
 
 void ent_update(Scene *scene, Entity *entity, float dt);
+void ent_collision(Scene *scene, Entity *entity, Entity *other);
 
 void ent_update(Scene *scene, Entity *entity, float dt){
+	entity->cell_id = 0;
 	Vec2 gravity = {0.0f, 80.0f};
 	Vec2 d_gravity;
 	float run = 0.0f;
@@ -30,6 +32,10 @@ void ent_update(Scene *scene, Entity *entity, float dt){
 	Vec2_Add(&entity->velocity, &entity->velocity, &gravity);
 
 	scene->camera.x = entity->position.x - 40;
+}
+
+void ent_collision(Scene *scene, Entity *entity, Entity *other){
+	entity->cell_id = 1;
 }
 
 int main(int argc, char **argv){
@@ -66,8 +72,8 @@ int main(int argc, char **argv){
 			16,
 			64,
 			48,
-			16,
-			24
+			8,
+			8
 			);
 
 	Scene_SetWorldTexture(game->main_scene, Game_GetTexture(game, 0));
@@ -76,7 +82,7 @@ int main(int argc, char **argv){
 	for(int i = 0; i < 20; i++)
 		Scene_SetTileId(game->main_scene, i, 10, WORLD_LAYER_FOREGROUND, 1);
 
-	game->main_scene->world->no_bounds = true;
+	game->main_scene->world->no_bounds = false;
 
 	Entity *ent = Scene_AddEntity(game->main_scene);
 	Entity_Reset(ent);
@@ -84,9 +90,10 @@ int main(int argc, char **argv){
 	ent->texture = Game_GetTexture(game, 1);
 	ent->cell_id = 0;
 	ent->position = (Vec2){0.0f, 15.0f};
-	ent->size = (Vec2){16.0f, 24.0f};
+	ent->size = (Vec2){8.0f, 8.0f};
 	ent->collision_mask = 1;
 	ent->update = ent_update;
+	ent->onCollision = ent_collision;
 
 	Game_Run(game);
 
