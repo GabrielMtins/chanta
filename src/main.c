@@ -76,7 +76,7 @@ int main(int argc, char **argv){
 	for(int i = 0; i < 20; i++)
 		Scene_SetTileId(game->main_scene, i, 10, WORLD_LAYER_FOREGROUND, 1);
 
-	game->main_scene->world->no_bounds = false;
+	game->main_scene->world->no_bounds = true;
 
 	Entity *ent = Scene_AddEntity(game->main_scene);
 	Entity_Reset(ent);

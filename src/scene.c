@@ -152,10 +152,9 @@ bool Scene_RemoveEntity(Scene *scene, Entity *entity){
 }
 
 static int Scene_Mod(int x, int y){
-	while(x < 0)
-		x += y;
+	x %= y;
 
-	return x % y;
+	return x < 0 ? x + y : x;
 }
 
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
