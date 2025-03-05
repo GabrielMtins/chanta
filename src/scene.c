@@ -1,7 +1,7 @@
 #include "scene.h"
 #include "box.h"
 
-static uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer);
+static int Scene_Mod(int x, int y);
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity);
 static bool Scene_HandlePhysics(Scene *scene);
 static bool Scene_HandleEntityCollision(Scene *scene);
@@ -16,8 +16,11 @@ bool Scene_Reset(Scene *scene, Game *game){
 	scene->camera = (Vec2){0.0f, 0.0f};
 	scene->tick = 0;
 
+	scene->loadNextScene = NULL;
+
 	memset(scene->world->tiles, 0, WORLD_DATA_SIZE);
 	scene->world->texture = NULL;
+	scene->world->no_bounds = false;
 
 	memset(scene->hud->tiles, 0, HUD_NUM_TILES * sizeof(scene->hud->tiles[0]));
 	scene->hud->texture = NULL;
@@ -83,8 +86,32 @@ bool Scene_SetHudTexture(Scene *scene, Texture *texture){
 	return true;
 }
 
+uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer){
+	int index;
+
+	if(scene->world->no_bounds){
+		x = Scene_Mod(x, WORLD_WIDTH);
+		y = Scene_Mod(y, WORLD_HEIGHT);
+	}
+
+	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
+		return WORLD_TILE_OUT_OF_BOUNDS;
+
+	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
+		return WORLD_TILE_OUT_OF_BOUNDS;
+
+	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
+
+	return scene->world->tiles[index];
+}
+
 bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id){
 	int index;
+
+	if(scene->world->no_bounds){
+		x = Scene_Mod(x, WORLD_WIDTH);
+		y = Scene_Mod(y, WORLD_HEIGHT);
+	}
 
 	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
 		return false;
@@ -124,18 +151,11 @@ bool Scene_RemoveEntity(Scene *scene, Entity *entity){
 	return true;
 }
 
-static uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer){
-	int index;
+static int Scene_Mod(int x, int y){
+	while(x < 0)
+		x += y;
 
-	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
-		return WORLD_TILE_OUT_OF_BOUNDS;
-
-	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
-		return WORLD_TILE_OUT_OF_BOUNDS;
-
-	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
-
-	return scene->world->tiles[index];
+	return x % y;
 }
 
 static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
@@ -297,6 +317,10 @@ static bool Scene_UpdateLogic(Scene *scene){
 			current->think(scene, current);
 	}
 
+	if(scene->loadNextScene != NULL){
+		scene->loadNextScene(scene);
+	}
+
 	return true;
 }
 
@@ -312,7 +336,7 @@ static bool Scene_RenderWorld(Scene *scene, int layer){
 
 	start_x = floorf(scene->camera.x / WORLD_TILE_WIDTH);
 	start_y = floorf(scene->camera.y / WORLD_TILE_HEIGHT);
-	end_x = ceilf((scene->camera.y + scene->game->context->width) / WORLD_TILE_WIDTH);
+	end_x = ceilf((scene->camera.x + scene->game->context->width) / WORLD_TILE_WIDTH);
 	end_y = ceilf((scene->camera.y + scene->game->context->height) / WORLD_TILE_HEIGHT);
 
 	for(int i = start_x; i < end_x; i++){

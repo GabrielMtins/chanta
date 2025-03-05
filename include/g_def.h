@@ -7,7 +7,7 @@
 #define INTERNAL_HEIGHT 272
 
 /* Propriedades do mundo */
-#define WORLD_WIDTH 256
+#define WORLD_WIDTH 10
 #define WORLD_HEIGHT 256
 #define WORLD_TILE_WIDTH 16
 #define WORLD_TILE_HEIGHT 16

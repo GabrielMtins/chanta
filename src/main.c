@@ -29,6 +29,7 @@ void ent_update(Scene *scene, Entity *entity, float dt){
 	entity->velocity.x = run * 50.0f;
 	Vec2_Add(&entity->velocity, &entity->velocity, &gravity);
 
+	scene->camera.x = entity->position.x - 40;
 }
 
 int main(int argc, char **argv){
@@ -72,16 +73,18 @@ int main(int argc, char **argv){
 	Scene_SetWorldTexture(game->main_scene, Game_GetTexture(game, 0));
 	Scene_SetHudTexture(game->main_scene, Game_GetTexture(game, 0));
 
-	for(int i = 0; i < 10; i++)
+	for(int i = 0; i < 20; i++)
 		Scene_SetTileId(game->main_scene, i, 10, WORLD_LAYER_FOREGROUND, 1);
+
+	game->main_scene->world->no_bounds = false;
 
 	Entity *ent = Scene_AddEntity(game->main_scene);
 	Entity_Reset(ent);
 
 	ent->texture = Game_GetTexture(game, 1);
 	ent->cell_id = 0;
-	ent->position = (Vec2){65.0f, 15.0f};
-	ent->size = (Vec2){24.0f, 24.0f};
+	ent->position = (Vec2){0.0f, 15.0f};
+	ent->size = (Vec2){16.0f, 24.0f};
 	ent->collision_mask = 1;
 	ent->update = ent_update;
 

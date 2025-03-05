@@ -23,6 +23,8 @@ struct world_s {
 	Texture *texture;
 	uint8_t tiles[WORLD_WIDTH * WORLD_HEIGHT * WORLD_NUM_LAYERS];
 	uint32_t collision_layer;
+
+	bool no_bounds;
 };
 
 struct hud_s  {
@@ -46,6 +48,8 @@ struct scene_s {
 	Vec2 camera;
 
 	uint32_t tick;
+
+	void (*loadNextScene)(Scene *);
 };
 
 /* Variáveis customizáveis da entidade. */
