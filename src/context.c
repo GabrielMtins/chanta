@@ -17,7 +17,7 @@ Context *Context_Create(const char *title, int w, int h, Mems *memory){
 			title,
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
-			2 * w, 2 * h,
+			w, h,
 			SDL_WINDOW_RESIZABLE
 			);
 
@@ -38,8 +38,15 @@ Context *Context_Create(const char *title, int w, int h, Mems *memory){
 	context->tick = 0;
 	context->data = NULL;
 	context->dt = 0.0f;
+	context->min_time_frame = 0;
 
 	return context;
+}
+
+bool Context_SetFps(Context *context, size_t fps){
+	context->min_time_frame = 1000 / fps;
+
+	return true;
 }
 
 bool Context_SetDataFromMem(Context *context, const char *data, int size){
@@ -60,8 +67,15 @@ void Context_PollEvent(Context *context){
 
 	new_tick = SDL_GetTicks();
 	context->delta_tick = (new_tick - context->tick);
+
+	if(context->delta_tick < context->min_time_frame && context->min_time_frame != 0){
+		SDL_Delay(context->min_time_frame - context->delta_tick);
+	}
+
+	context->delta_tick = context->min_time_frame;
+
 	context->dt = 0.001f * context->delta_tick;
-	context->tick = new_tick;
+	context->tick = SDL_GetTicks();
 	
 	while(SDL_PollEvent(&e)){
 		if(e.type == SDL_QUIT)

@@ -24,12 +24,16 @@ typedef struct {
 	size_t delta_tick;
 	float dt;
 
+	size_t min_time_frame;
+
 	bool quit;
 
 	Mems *memory;
 } Context;
 
 Context *Context_Create(const char *title, int w, int h, Mems *memory);
+
+bool Context_SetFps(Context *context, size_t fps);
 
 bool Context_SetDataFromMem(Context *context, const char *data, int size);
 
