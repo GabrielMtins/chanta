@@ -52,6 +52,7 @@ bool Scene_Render(Scene *scene){
 	Scene_RenderWorld(scene, WORLD_LAYER_BACKGROUND);
 	Scene_RenderWorld(scene, WORLD_LAYER_FOREGROUND);
 
+	/* Renderizar entidades */
 	for(size_t i = 0; i < scene->num_entities; i++){
 		current = &scene->entities[i];
 
@@ -86,26 +87,39 @@ bool Scene_SetHudTexture(Scene *scene, Texture *texture){
 	return true;
 }
 
-uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer){
+bool Scene_SetHudTile(Scene *scene, int x, int y, int id){
 	int index;
 
-	if(scene->world->no_bounds){
-		x = Scene_Mod(x, WORLD_WIDTH);
-		y = Scene_Mod(y, WORLD_HEIGHT);
-	}
+	if(x < 0 || y < 0 || x >= HUD_WIDTH || y >= HUD_HEIGHT)
+		return false;
 
-	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
-		return WORLD_TILE_OUT_OF_BOUNDS;
+	index = HUD_WIDTH * y + x;
 
-	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
-		return WORLD_TILE_OUT_OF_BOUNDS;
+	scene->hud->tiles[index] = (uint8_t) (id + 1);
 
-	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
-
-	return scene->world->tiles[index];
+	return true;
 }
 
-bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id){
+int Scene_GetTileId(Scene *scene, int x, int y, int layer){
+	int index;
+
+	if(scene->world->no_bounds){
+		x = Scene_Mod(x, WORLD_WIDTH);
+		y = Scene_Mod(y, WORLD_HEIGHT);
+	}
+
+	if(x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT)
+		return WORLD_TILE_OUT_OF_BOUNDS;
+
+	if(layer < 0 || layer >= WORLD_NUM_LAYERS)
+		return WORLD_TILE_OUT_OF_BOUNDS;
+
+	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
+
+	return (int) (scene->world->tiles[index]) - 1;
+}
+
+bool Scene_SetTileId(Scene *scene, int x, int y, int layer, int id){
 	int index;
 
 	if(scene->world->no_bounds){
@@ -121,7 +135,7 @@ bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id){
 
 	index = layer * WORLD_WIDTH * WORLD_HEIGHT + WORLD_WIDTH * y + x;
 
-	scene->world->tiles[index] = id;
+	scene->world->tiles[index] = (uint8_t) (id + 1);
 
 	return true;
 }
@@ -174,7 +188,7 @@ static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
 
 	for(int i = start_x; i < end_x; i++){
 		for(int j = start_y; j < end_y; j++){
-			if(Scene_GetTileId(scene, i, j, WORLD_LAYER_FOREGROUND) == 0)
+			if(Scene_GetTileId(scene, i, j, WORLD_LAYER_FOREGROUND) == -1)
 				continue;
 
 			block_start = (Vec2) {i * WORLD_TILE_WIDTH, j * WORLD_TILE_HEIGHT};
@@ -345,10 +359,10 @@ static bool Scene_RenderWorld(Scene *scene, int layer){
 
 	for(int i = start_x; i < end_x; i++){
 		for(int j = start_y; j < end_y; j++){
-			uint8_t id = Scene_GetTileId(scene, i, j, layer);
-			if(id == 0)
+			int id = Scene_GetTileId(scene, i, j, layer);
+
+			if(id == -1)
 				continue;
-			id--;
 
 			screen_x = i * WORLD_TILE_WIDTH - (int) scene->camera.x;
 			screen_y = j * WORLD_TILE_WIDTH - (int) scene->camera.y;

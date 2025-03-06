@@ -16,9 +16,11 @@ bool Scene_SetWorldTexture(Scene *scene, Texture *texture);
 
 bool Scene_SetHudTexture(Scene *scene, Texture *texture);
 
-uint8_t Scene_GetTileId(Scene *scene, int x, int y, int layer);
+bool Scene_SetHudTile(Scene *scene, int x, int y, int id);
 
-bool Scene_SetTileId(Scene *scene, int x, int y, int layer, uint8_t id);
+int Scene_GetTileId(Scene *scene, int x, int y, int layer);
+
+bool Scene_SetTileId(Scene *scene, int x, int y, int layer, int id);
 
 Entity * Scene_AddEntity(Scene *scene);
 

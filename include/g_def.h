@@ -1,14 +1,14 @@
 #ifndef G_DEF_H
 #define G_DEF_H
 
-#define MAX_ENTITIES 256
+#define MAX_ENTITIES 16
 
 #define INTERNAL_WIDTH 480
 #define INTERNAL_HEIGHT 272
 
 /* Propriedades do mundo */
-#define WORLD_WIDTH 10
-#define WORLD_HEIGHT 256
+#define WORLD_WIDTH 30
+#define WORLD_HEIGHT 16
 #define WORLD_TILE_WIDTH 16
 #define WORLD_TILE_HEIGHT 16
 #define WORLD_NUM_LAYERS 3
