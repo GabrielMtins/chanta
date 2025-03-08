@@ -117,28 +117,35 @@ void selector_think(Scene *scene, Entity *entity){
 	int x, y, dx, dy;
 	const uint8_t *keys = SDL_GetKeyboardState(NULL);
 
+	int b_open_tile = 0, b_put_flag = 0;
+
 	x = (int) (entity->position.x / WORLD_TILE_WIDTH);
 	y = (int) (entity->position.y / WORLD_TILE_HEIGHT);
 
 	dx = dy = 0;
 
-	if(keys[SDL_SCANCODE_W])
+	b_open_tile = Context_GetKey(scene->game->context, INPUT_B);
+	b_put_flag = Context_GetKey(scene->game->context, INPUT_A);
+
+	if(Context_GetKey(scene->game->context, INPUT_START))
+		scene->game->context->quit = true;
+
+	if(Context_GetKey(scene->game->context, INPUT_UP))
 		dy--;
 
-	if(keys[SDL_SCANCODE_S])
+	if(Context_GetKey(scene->game->context, INPUT_DOWN))
 		dy++;
 
-	if(keys[SDL_SCANCODE_A])
+	if(Context_GetKey(scene->game->context, INPUT_LEFT))
 		dx--;
 
-	if(keys[SDL_SCANCODE_D])
+	if(Context_GetKey(scene->game->context, INPUT_RIGHT))
 		dx++;
-
 
 	if(entity->state == SELECTOR_STATE_LOST){
 		entity->next_think = scene->tick + 150;
 
-		if(keys[SDL_SCANCODE_J])
+		if(b_open_tile)
 			scene->loadNextScene = load_next_scene;
 	}
 	else if(dx == 0 && dy == 0){
@@ -172,7 +179,7 @@ void selector_think(Scene *scene, Entity *entity){
 	entity->position.x = WORLD_TILE_WIDTH * x;
 	entity->position.y = WORLD_TILE_WIDTH * y;
 
-	if(keys[SDL_SCANCODE_J]){
+	if(b_open_tile){
 		if(Scene_GetTileId(scene, x, y, WORLD_LAYER_BACKGROUND) == -1)
 			build_world(scene, x, y);
 
@@ -192,7 +199,7 @@ void selector_think(Scene *scene, Entity *entity){
 		}
 	}
 
-	if(keys[SDL_SCANCODE_K] && entity->state == SELECTOR_STATE_NULL){
+	if(b_put_flag){
 		int id = Scene_GetTileId(scene, x, y, WORLD_LAYER_FOREGROUND);
 
 		if(id == TILE_FLAG){
@@ -383,6 +390,8 @@ int main(int argc, char **argv){
 			);
 
 	load_next_scene(game->main_scene);
+
+	Context_SetFps(context, 60);
 
 	Game_Run(game);
 
