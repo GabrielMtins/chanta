@@ -50,6 +50,10 @@ struct scene_s {
 	uint32_t tick;
 
 	void (*loadNextScene)(Scene *);
+
+	int render_layer_background;
+	int render_layer_foreground;
+	int render_layer_detail;
 };
 
 /* Variáveis customizáveis da entidade. */

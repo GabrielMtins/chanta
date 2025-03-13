@@ -32,6 +32,10 @@ bool Scene_Reset(Scene *scene, Game *game){
 
 	scene->world->collision_layer = 1;
 
+	scene->render_layer_background = WORLD_LAYER_BACKGROUND;
+	scene->render_layer_foreground = WORLD_LAYER_FOREGROUND;
+	scene->render_layer_detail     = WORLD_LAYER_DETAIL;
+
 	return true;
 }
 
@@ -49,8 +53,8 @@ bool Scene_Update(Scene *scene){
 bool Scene_Render(Scene *scene){
 	Entity *current;
 
-	Scene_RenderWorld(scene, WORLD_LAYER_BACKGROUND);
-	Scene_RenderWorld(scene, WORLD_LAYER_FOREGROUND);
+	Scene_RenderWorld(scene, scene->render_layer_background);
+	Scene_RenderWorld(scene, scene->render_layer_foreground);
 
 	/* Renderizar entidades */
 	for(size_t i = 0; i < scene->num_entities; i++){
@@ -69,7 +73,7 @@ bool Scene_Render(Scene *scene){
 				);
 	}
 
-	Scene_RenderWorld(scene, WORLD_LAYER_DETAIL);
+	Scene_RenderWorld(scene, scene->render_layer_detail);
 	Scene_RenderHud(scene);
 
 	return true;
@@ -188,7 +192,7 @@ static bool Scene_CheckCollisionWorld(Scene *scene, Entity *entity){
 
 	for(int i = start_x; i < end_x; i++){
 		for(int j = start_y; j < end_y; j++){
-			if(Scene_GetTileId(scene, i, j, WORLD_LAYER_FOREGROUND) == -1)
+			if(Scene_GetTileId(scene, i, j, scene->render_layer_foreground) == -1)
 				continue;
 
 			block_start = (Vec2) {i * WORLD_TILE_WIDTH, j * WORLD_TILE_HEIGHT};
