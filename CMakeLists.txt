@@ -43,3 +43,15 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SDL2_MIXER_LIBRARIES}
 	${MATH_LIBRARY}
 )
+
+if(PSP)
+    # Create an EBOOT.PBP file
+    create_pbp_file(
+        TARGET ${PROJECT_NAME}
+        ICON_PATH NULL
+        BACKGROUND_PATH NULL
+        PREVIEW_PATH NULL
+        TITLE ${PROJECT_NAME}
+        VERSION 01.00
+    )
+endif()

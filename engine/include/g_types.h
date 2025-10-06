@@ -6,6 +6,7 @@
 #include "vec2.h"
 #include "texture.h"
 #include "resource.h"
+#include "entvars.h"
 
 typedef struct scene_s Scene;
 typedef struct game_s Game;
@@ -55,11 +56,6 @@ struct scene_s {
 	int render_layer_foreground;
 	int render_layer_detail;
 };
-
-/* Variáveis customizáveis da entidade. */
-typedef struct {
-	char tmp;
-} EntVars;
 
 /* Estrutura da entidade de fato. Se quiser adicionar componentes
  * a mais, adicione na EntVars por questão de organização */

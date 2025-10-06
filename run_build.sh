@@ -1,7 +1,9 @@
 #!/bin/sh
 
 if [ ! -d ./build ]; then
-	cmake -B build
+	mkdir build && cd build
+	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
+	cd ..
 fi
 
 if [ $? -eq 0 ]; then
