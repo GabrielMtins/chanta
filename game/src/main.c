@@ -362,7 +362,7 @@ int main(int argc, char **argv){
 	/* Criar a estrutura que organizará a memória */
 	memory = Mems_Create(malloc(MEMORY_USED), MEMORY_USED);
 
-	context = Context_Create("hi", INTERNAL_WIDTH, INTERNAL_HEIGHT, &memory);
+	context = Context_Create("Campo Minado PSP", INTERNAL_WIDTH, INTERNAL_HEIGHT, &memory);
 	game = Game_Create(context);
 
 	MegaTexture_Load(&game->resources->mega_textures[0], context, "tile.png");

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(Chanta LANGUAGES C)
+project(CampoMinadoPSP LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -23,7 +23,6 @@ include(FindPkgConfig)
 pkg_search_module(SDL2 REQUIRED sdl2)
 pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer)
-pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer)
 
 find_library(MATH_LIBRARY m)
 
@@ -32,7 +31,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
 	include/
-	external/glad/include
 	"${GAME_DIR}/include"
 	"${ENGINE_DIR}/include"
 )
